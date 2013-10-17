@@ -1,6 +1,15 @@
 var path = require('path');
 var fs = require('fs');
+var mysql = require('mysql');
+
 var datadir = module.exports.datadir = path.join(__dirname, "../data/sites.txt"); // tests will need to override this.
+
+var connection = mysql.createConnection({
+  host: "127.0.0.1",
+  port: 3306,
+  database: "web_historian",
+  user: "root"
+});
 
 var headers = {
   "access-control-allow-origin": "*",
@@ -11,8 +20,8 @@ var headers = {
 };
 
 var contains = function(array, target){
-  for( var j = 0; j < array.length; j++ ){
-    if( array[j] === target ){
+  for ( var j = 0; j < array.length; j++ ){
+    if ( array[j] === target ){
       return true;
     }
   }
@@ -28,7 +37,7 @@ var sendResponse = module.exports.sendResponse = function(response, message, sta
 module.exports.handleRequest = function (req, res) {
   var msg;
   var archive = fs.readFileSync(datadir, "utf8").split("\n");
-  for( var i = 0; i < archive.length-1; i++ ){
+  for ( var i = 0; i < archive.length-1; i++ ){
     archive[i] = "/" + archive[i];
   }
   archive.pop();
@@ -47,10 +56,18 @@ module.exports.handleRequest = function (req, res) {
       });
       req.on('end', function(){
         fs.appendFileSync(datadir, requestBody+"\n");
+        connection.connect(function(err){
+          console.log("Connection error:",err);
+        });
+        var sqlCommand = "INSERT into urls (url, createdAt) values('"+requestBody+"', CURDATE());";
+        connection.query(sqlCommand, function(errs, rows, fields){
+            console.log("SQL query error:",errs);
+          });
+        connection.end();
         sendResponse(res, requestBody, 302);
       });
     }
-  }else{
+  }else {
     sendResponse(res, "URL does not exist.", 404);
   }
 };
