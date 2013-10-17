@@ -1,6 +1,6 @@
 var path = require('path');
 var fs = require('fs');
-module.exports.datadir = path.join(__dirname, "../data/sites.txt"); // tests will need to override this.
+var datadir = module.exports.datadir = path.join(__dirname, "../data/sites.txt"); // tests will need to override this.
 
 var headers = {
   "access-control-allow-origin": "*",
@@ -27,7 +27,7 @@ var sendResponse = module.exports.sendResponse = function(response, message, sta
 
 module.exports.handleRequest = function (req, res) {
   var msg;
-  var archive = fs.readFileSync(this.datadir, "utf8").split("\n");
+  var archive = fs.readFileSync(datadir, "utf8").split("\n");
   for( var i = 0; i < archive.length-1; i++ ){
     archive[i] = "/" + archive[i];
   }
@@ -41,9 +41,14 @@ module.exports.handleRequest = function (req, res) {
       }
       sendResponse(res, msg);
     }else if (req.method === "POST"){
-      var url = req._postData.url;
-      fs.writeFileSync(this.datadir, url+"\n");
-      sendResponse(res, url, 302);
+      var requestBody = "";
+      req.on('data', function(chunk){
+        requestBody += chunk;
+      });
+      req.on('end', function(){
+        fs.appendFileSync(datadir, requestBody+"\n");
+        sendResponse(res, requestBody, 302);
+      });
     }
   }else{
     sendResponse(res, "URL does not exist.", 404);
