@@ -1,5 +1,6 @@
 var handler = require("../web/request-handler");
-handler.datadir = __dirname + "testdata/sites.txt";
+handler.datadir = __dirname + "/testdata/sites.txt";
+var fs = require("fs");
 var stubs = require("./helpers/stubs");
 var res;
 
@@ -33,13 +34,13 @@ describe("Node Server Request Listener Function", function() {
       expect(res._responseCode).toEqual(200);
       expect(res._data).toMatch(/google/); // the resulting html should have the text "google"
       expect(res._ended).toEqual(true);
-    })
+    });
   });
 
   it("Should accept posts to /", function() {
     fs.writeFileSync(handler.datadir, ""); // reset the test file
 
-    var url = "www.example.com";
+    var url = "www.google.com";
     var req = new stubs.Request("/", "POST", {url: url});
 
     handler.handleRequest(req, res);
