@@ -16,14 +16,10 @@ var download = function (error, result) {
 };
 
 exports.downloadUrls = function(urls){
-  // fixme
-  var htmlFiles = [];
   var dir = path.join(__dirname, "../../data/sites/");
   for( var i = 0; i < urls.length; i++ ){
     http.get(urls[i], dir+urls[i], download);
-    htmlFiles[i] = fs.readFileSync(dir + urls[i], "utf8");
   }
-  // setTimeout(function(){console.log("HTML FILES:",htmlFiles);},10000);
-  return htmlFiles;
+  return true;
 };
 

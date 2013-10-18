@@ -1,3 +1,5 @@
 www.google.com
 www.bing.com
-www.hotmail.com
+www.naver.com
+www.msn.com
+www.cnn.com

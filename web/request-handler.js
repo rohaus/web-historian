@@ -63,15 +63,15 @@ module.exports.handleRequest = function (req, res) {
       });
       req.on('end', function(){
         requestBody = requestBody.split("=")[1];
-        connection.connect(function(err){
-          console.log("Connection error:",err);
-        });
-        var sqlCommand = "INSERT into urls (url, createdAt) values('"+requestBody+"', CURDATE());";
-        connection.query(sqlCommand, function(errs, rows, fields){
-          console.log("SQL query error:",errs);
-        });
-        connection.end();
         if( !contains(archive, "/"+requestBody) ){
+          var sqlCommand = "INSERT into urls (url, createdAt) values('"+requestBody+"', CURDATE());";
+          connection.connect(function(err){
+            console.log("Connection error:",err);
+          });
+          connection.query(sqlCommand, function(errs, rows, fields){
+            console.log("SQL query error:",errs);
+          });
+          connection.end();
           fs.appendFileSync(datadir, requestBody+"\n");
           pathname = path.join(__dirname, "/public/redirect.html");
           responseBody = fs.readFileSync(pathname, "utf8");
@@ -85,3 +85,5 @@ module.exports.handleRequest = function (req, res) {
     sendResponse(res, "URL does not exist.", 404);
   }
 };
+// Fix CRON
+// Fix reusability after page redirects / Fix SQL error for multiple get post requests 
